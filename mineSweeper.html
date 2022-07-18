@@ -7,15 +7,61 @@
   <title>MineSweeper</title>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
   <link rel="stylesheet" href="src/my.css">
+  <script defer src="src/main.js"></script>
 </head>
 <body>
-  <div id="app">
-    <div id="leftMenu">
-      This is Left Menu!
+<div id="app">
+  <div id="leftMenu">
+    <div v-if="errorMessage"><span id="errorWindow">{{ errorMessage }}</span></div>
+    <div><input type="button" value="RESET" @click="reset"></div>
+    <div class="customParameter"><label for="rows">Rows</label>
+      <input @change="inputChange" type="number" name="rows" id="rows" v-model:value="inputsC.rows">
     </div>
-    <div id="mainWindow">
-      This is Main Window!
+    <div class="customParameter"><label for="columns">Columns</label>
+      <input @change="inputChange" type="number" name="columns" id="columns" v-model:value="inputsC.columns">
+      <span>{{ ` ${inputCellCount} cells` }}</span>
     </div>
+    <div class="customParameter"><label for="bombs">bombs</label>
+      <input @change="inputChange" type="number" name="bombs" id="bombs" v-model:value="inputsC.bombs">
+      <span>{{ ` ${~~inputBombDensity} %` }}</span>
+    </div>
+    <div class="customParameter"><label for="preset">preset</label>
+      <select name="preset" id="preset" v-model:value="selectedPreset" @change="presetChange">
+        <option v-for="opt in presets"
+                :value="opt.name" :disabled="opt.disabled" :hidden="opt.hidden">{{ opt.name }}
+        </option>
+      </select></div>
   </div>
+  <div id="mainWindow">
+    title x
+    <table id="game-board" :style="styles.boardStyle" @click="boardClicked" @contextmenu="boardContext">
+      <tr v-for="(vr,r) in game.cells">
+        <td v-for="(vc,c) in vr"
+            :style="styles.boardCellStyle"
+            :data-row="r"
+            :data-col="c"
+            :data-opened="vc.opened"
+            :data-sus="vc.sus"
+        >
+          {{ r * game.columns + c }}
+        </td>
+      </tr>
+    </table>
+    game-index
+    <table id="game-index" :style="styles.boardStyle">
+      <tr v-for="(vr,r) in game.cells">
+        <td v-for="(vc,c) in vr"
+            :style="styles.boardCellStyle"
+            :data-row="r"
+            :data-col="c"
+            :data-opened="vc.opened"
+            :data-sus="vc.sus"
+        >
+          {{ r * game.columns + c }}
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
 </body>
 </html>

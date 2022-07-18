@@ -1,32 +1,50 @@
-:root{
-  --leftMenu-width:200px;
+:root {
+  --leftMenu-width: 200px;
 }
 
-#leftMenu{
-  position:fixed;
-  top:0;
-  left:0;
-  width:var(--leftMenu-width);
+#leftMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--leftMenu-width);
   height: 100%;
-  border:solid aquamarine;
-  font-size:small;
+  border: solid aquamarine;
+  font-size: small;
 }
-#mainWindow{
+
+#mainWindow {
   padding-left: var(--leftMenu-width);
 }
 
-table, table th, table td{
+
+table, table th, table td {
   border-collapse: collapse;
   border: solid 1px;
 }
+td[data-opened="0"]{
 
+}
+td[data-opened="1"]{
+  background-color: blue;
+}
 
-inpurt[type="number"]{
-  width: 3em;
+input[type="number"] {
+  width: 4em;
   text-align: right;
 }
 
-a{
-  cursor:pointer;
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
+a {
+  cursor: pointer;
+}
+
+.customParameter > label {
+  width: 5em;
+  text-align: right;
+  display: inline-block;
+}

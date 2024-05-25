@@ -1,288 +1,305 @@
-<style>
-  * {
-    font-family: "JetBrains Mono", consolas;
-  }
+<!DOCTYPE html>
+<html lang="en">
 
-  /* #tBoard{
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache">
+  <title>MineSweeperWeb</title>
+  <style>
+    * {
+      font-family: "JetBrains Mono", consolas;
+    }
+
+    /* #tBoard{
     border-collapse: collapse;
   } */
-  input{
-    text-align: right;
-  }
-  #tBoard,
-  #tBoard tr,
-  #tBoard tr>td {
-    border-collapse: collapse;
-    border: solid 1px;
-  }
+    input {
+      text-align: right;
+    }
 
-  #tBoard tr>td,
-  #tBoard tr>td>button {
-    padding: 0;
-    text-align: center;
-    height: 22px;
-    width: 22px;
-  }
+    #tBoard,
+    #tBoard tr,
+    #tBoard tr>td {
+      border-collapse: collapse;
+      border: solid 1px;
+    }
 
-  /* open */
-  #tBoard tr>td>button {
-    background-color: #888;
-    border: solid 3px white;
-  }
+    #tBoard tr>td,
+    #tBoard tr>td>button {
+      padding: 0;
+      text-align: center;
+      height: 22px;
+      width: 22px;
+    }
 
-  #tBoard tr>td>button.opened {
-    background-color: white;
-    border: solid 3px #AAA;
-  }
-  #tBoard tr>td>button.flagged {
-    background-color: #888;
-    border: solid 3px white;
-    color: white;
-  }
-</style>
-<div id="params">
-  <label for="inRows">Rows: <input name="inRows" id="inRows" type="number" size="3" min="1" max="300" value="10"></label>
-  <label for="inCols">Cols: <input name="inCols" id="inCols" type="number" size="3" min="1" max="300" value="10"></label>
-  <label for="inBombs">Bombs: <input name="inBombs" id="inBombs" type="number" size="3" min="1" max="999" value="10"></label>
-  <div id="divError" style="color:red;">Errors here: <span id="lblError"></span></div>
-</div>
-<div id="gameField">
-  <div>
-    <input name="inBombsRemain" id="inBombsRemain" type="text" readonly size="3">
-    <button id="btnReset">reset</button>
-    <input name="inTimer" id="inTimer" type="text" readonly size="3">
+    /* open */
+    #tBoard tr>td>button {
+      background-color: #888;
+      border: solid 3px white;
+    }
+
+    #tBoard tr>td>button.opened {
+      background-color: white;
+      border: solid 3px #AAA;
+    }
+
+    #tBoard tr>td>button.flagged {
+      background-color: #888;
+      border: solid 3px white;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="params">
+    <label for="inRows">Rows: <input name="inRows" id="inRows" type="number" size="3" min="1" max="300" value="10"></label>
+    <label for="inCols">Cols: <input name="inCols" id="inCols" type="number" size="3" min="1" max="300" value="10"></label>
+    <label for="inBombs">Bombs: <input name="inBombs" id="inBombs" type="number" size="3" min="1" max="999" value="10"></label>
+    <div id="divError" style="color:red;">Errors here: <span id="lblError"></span></div>
   </div>
-  <table id="tBoard" draggable="false"></table>
-</div>
-<script>
-  let inRows = HTMLInputElement.prototype;
-  let inCols = HTMLInputElement.prototype;
-  let inBombs = HTMLInputElement.prototype;
-  let lblError = HTMLSpanElement.prototype;
-  let btnReset = HTMLButtonElement.prototype;
-  let tBoard = HTMLTableElement.prototype;
-  Array.from(document.querySelectorAll("[id]"), v => eval(v.id + "=v"));
+  <div id="gameField">
+    <div>
+      <input name="inBombsRemain" id="inBombsRemain" type="text" readonly size="3">
+      <button id="btnReset">reset</button>
+      <input name="inTimer" id="inTimer" type="text" readonly size="3">
+    </div>
+    <table id="tBoard" draggable="false"></table>
+  </div>
+  <script>
+    let inRows = HTMLInputElement.prototype;
+    let inCols = HTMLInputElement.prototype;
+    let inBombs = HTMLInputElement.prototype;
+    let lblError = HTMLSpanElement.prototype;
+    let btnReset = HTMLButtonElement.prototype;
+    let tBoard = HTMLTableElement.prototype;
+    Array.from(document.querySelectorAll("[id]"), v => eval(v.id + "=v"));
 
-  function td(obj = Cell.prototype) {
-    let t = document.createElement('td');
-    let b = t.appendChild(document.createElement('button'));
-    b.cl = obj;
-    return {
-      t: t,
-      b: b
-    };
-  }
+    function td(obj = Cell.prototype) {
+      let t = document.createElement('td');
+      let b = t.appendChild(document.createElement('button'));
+      b.cl = obj;
+      return {
+        t: t,
+        b: b
+      };
+    }
 
-  class SecondsTimer {
-    constructor(displayElement){
-      this.#display = displayElement;
-      this.reset();
-    }
-    #display = HTMLInputElement.prototype;
-    #savedTime = 0;
-    #differ = 0;
-    #intervalID = 0;
-    interval = 200; // display update rate by millsecomds
-    reset(){
-      clearInterval(this.#intervalID);
-      this.#intervalID = 0;
-      this.#savedTime=0;
-      this.#differ=0;
-      this.#display.value = 0;
-    }
-    start(){
-      this.#differ = performance.now()-this.#savedTime;
-      this.#intervalID = setInterval(() => { this.#update(); }, this.interval);
-    }
-    #update(){
-      this.#savedTime = performance.now() - this.#differ;
-      this.#display.value = ~~(this.#savedTime/1000);
-    }
-    pause(){
-      this.#update();
-      clearInterval(this.#intervalID);
-      this.#intervalID = 0;
-    }
-  }
-
-  class Cell {
-    static FLAG = 'P';
-    static NONE = '';
-    static BOMB = '#';
-    #game = Board.prototype;
-    #r = 0; get r(){return this.#r;}
-    #c = 0; get c(){return this.#c;}
-    #i = 0; get i(){return this.#i;}
-    #b = false; get b(){return this.#b;}
-    setBomb(){this.#b = true;}
-    el = {
-      t: HTMLTableCellElement.prototype,
-      b: HTMLButtonElement.prototype
-    };
-    get opened() { return this.el.b.classList.contains("opened"); }
-    set opened(f) { this.el.b.classList[f ? 'add' : 'remove']("opened"); }
-    get flagged() { return this.el.b.classList.contains("flagged"); };
-    set flagged(flagState) {
-      if (flagState) {
-        this.el.b.classList.add("flagged");
-        this.text = Cell.FLAG;
-      } else {
-        this.el.b.classList.remove("flagged");
-        this.text = Cell.NONE;
+    class SecondsTimer {
+      constructor(displayElement) {
+        this.#display = displayElement;
+        this.reset();
       }
-    };
-    around = [];
-    get aroundCells(){ return this.around.map(i => this.#game.tableArray[i]);}
-    get aroundBombsCount() { return this.aroundCells.filter(c => c.b).length; }
-    get aroundFlaggsCount() { return this.aroundCells.filter(c => c.flagged).length; }
-    constructor(game, r, c) {
-      this.#game = game;
-      this.#r = r;
-      this.#c = c;
-      this.#i = r * game.rowCount + c;
-      this.el = td(this);
-      for (let i = r - 1; i < r + 2 && i < game.rowCount; i++) {
-        if (i < 0) continue;
-        for (let j = c - 1; j < c + 2 && j < game.colCount; j++) {
-          if (j < 0) continue;
-          if (!(i - r || j - c)) continue;
-          this.around.push(i * game.rowCount + j);
+      #display = HTMLInputElement.prototype;
+      #savedTime = 0;
+      #differ = 0;
+      #intervalID = 0;
+      interval = 200; // display update rate by millsecomds
+      reset() {
+        clearInterval(this.#intervalID);
+        this.#intervalID = 0;
+        this.#savedTime = 0;
+        this.#differ = 0;
+        this.#display.value = 0;
+      }
+      start() {
+        this.#differ = performance.now() - this.#savedTime;
+        this.#intervalID = setInterval(() => { this.#update(); }, this.interval);
+      }
+      #update() {
+        this.#savedTime = performance.now() - this.#differ;
+        this.#display.value = ~~(this.#savedTime / 1000);
+      }
+      pause() {
+        this.#update();
+        clearInterval(this.#intervalID);
+        this.#intervalID = 0;
+      }
+    }
+
+    class Cell {
+      static FLAG = 'P';
+      static NONE = '';
+      static BOMB = '#';
+      #game = Board.prototype;
+      #r = 0; get r() { return this.#r; }
+      #c = 0; get c() { return this.#c; }
+      #i = 0; get i() { return this.#i; }
+      #b = false; get b() { return this.#b; }
+      setBomb() { this.#b = true; }
+      el = {
+        t: HTMLTableCellElement.prototype,
+        b: HTMLButtonElement.prototype
+      };
+      get opened() { return this.el.b.classList.contains("opened"); }
+      set opened(f) { this.el.b.classList[f ? 'add' : 'remove']("opened"); }
+      get flagged() { return this.el.b.classList.contains("flagged"); };
+      set flagged(flagState) {
+        if (flagState) {
+          this.el.b.classList.add("flagged");
+          this.text = Cell.FLAG;
+        } else {
+          this.el.b.classList.remove("flagged");
+          this.text = Cell.NONE;
+        }
+      };
+      around = [];
+      get aroundCells() { return this.around.map(i => this.#game.tableArray[i]); }
+      get aroundBombsCount() { return this.aroundCells.filter(c => c.b).length; }
+      get aroundFlaggsCount() { return this.aroundCells.filter(c => c.flagged).length; }
+      constructor(game, r, c) {
+        this.#game = game;
+        this.#r = r;
+        this.#c = c;
+        this.#i = r * game.rowCount + c;
+        this.el = td(this);
+        for (let i = r - 1; i < r + 2 && i < game.rowCount; i++) {
+          if (i < 0) continue;
+          for (let j = c - 1; j < c + 2 && j < game.colCount; j++) {
+            if (j < 0) continue;
+            if (!(i - r || j - c)) continue;
+            this.around.push(i * game.rowCount + j);
+          }
         }
       }
-    }
-    get text() { return this.el.b.innerText; }
-    set text(t) { this.el.b.innerText = t; }
-    clicked() {
-      if (this.#game.isGameOver) return;
-      if (!this.#game.isInitialized) this.#game.init(this);
-      if (this.flagged) return;
-      if (!this.opened)
-        this.open();
+      get text() { return this.el.b.innerText; }
+      set text(t) { this.el.b.innerText = t; }
+      clicked() {
+        if (this.#game.isGameOver) return;
+        if (!this.#game.isInitialized) this.#game.init(this);
+        if (this.flagged) return;
+        if (!this.opened)
+          this.open();
         else this.openAll();
-    }
-    forceOpen() { // open when GameOver
-      if (!this.#b) return;
-      if (this.opened) return;
-      if (this.flagged) return;
-      this.opened = true;
-      this.text = Cell.BOMB;
-    }
-    open() {
-      if (this.#game.isGameOver) return;
-      if (this.flagged) return;
-      if (this.opened) return;
-      this.opened = true;
-      if (this.#b){
+      }
+      forceOpen() { // open when GameOver
+        if (!this.#b) return;
+        if (this.opened) return;
+        if (this.flagged) return;
+        this.opened = true;
         this.text = Cell.BOMB;
-        return this.#game.setGameOver();
       }
-      if (this.aroundBombsCount)
-        this.text = this.aroundBombsCount;
+      open() {
+        if (this.#game.isGameOver) return;
+        if (this.flagged) return;
+        if (this.opened) return;
+        this.opened = true;
+        if (this.#b) {
+          this.text = Cell.BOMB;
+          return this.#game.setGameOver();
+        }
+        if (this.aroundBombsCount)
+          this.text = this.aroundBombsCount;
         else this.openAll();
-      this.#game.checkCleared();
-    }
-    openAll() {
-      if (this.aroundFlaggsCount != this.aroundBombsCount) return;
-      this.aroundCells.forEach(c => c.open());
-    }
-    toggleFlag() {
-      if (this.#game.isGameOver) return;
-      if (!this.#game.isInitialized) return;
-      if (this.opened) return;
-      this.flagged = !this.flagged;
-    }
-  };
-
-  class Board {
-    rowCount = 0;
-    colCount = 0;
-    bombCount = 0;
-    isGameOver = false;
-    isCleard = false;
-    tableArray = [];
-    table = [];
-    tableElement = HTMLTableElement.prototype;
-    bombsElement = HTMLInputElement.prototype;
-    timerElement = HTMLInputElement.prototype;
-    timer = SecondsTimer.prototype;
-    isInitialized = false;
-    get remainBombsCount () {
-      return this.isInitialized? this.bombCount : this.bombCount - this.tableArray.filter(c=>c.flagged).length;
-    }
-    get dispBombsCount () {return this.bombsElement.value;}
-    set dispBombsCount (c) {this.bombsElement.value = c;}
-
-    constructor(tableElement, bombsElement, timerElement) {
-      this.tableElement = tableElement;
-      this.bombsElement = bombsElement;
-      this.timerElement = timerElement;
-      this.timer = new SecondsTimer(timerElement);
-      this.tableElement.addEventListener('click', ev => {
-        if (!ev.target.cl) return ev.preventDefault();
-        ev.target.cl.clicked();
-      });
-      this.tableElement.addEventListener('contextmenu', ev => {
-        ev.preventDefault();
-        if (!ev.target.cl) return;
-        ev.target.cl.toggleFlag();
-        this.dispBombsCount = this.remainBombsCount;
-      });
-    }
-    reset(rowCount = 10, colCount = 10, bombCount = 10) {
-      rowCount = Number(rowCount);
-      colCount = Number(colCount);
-      bombCount = Number(bombCount);
-      if (rowCount < 1) throw `invalid Parameter: rowCount = ${rowCount}`;
-      if (colCount < 1) throw `invalid Parameter: colCount = ${colCount}`;
-      if (bombCount < 1) throw `invalid Parameter: bombCount = ${bombCount}`;
-      if (rowCount * colCount <= bombCount) throw `invalid Parameter: bombCount:${bombCount} over board size:${rowCount*colCount}(= ${rowCount} * ${colCount})`;
-      this.rowCount = rowCount;
-      this.colCount = colCount;
-      this.bombCount = bombCount;
-
-      this.tableElement.innerHTML = '';
-      this.table = Array(rowCount).fill().map((v, r) => Array(colCount).fill().map((v, c) => new Cell(this, r, c)));
-      this.tableArray = this.table.reduce((p, v) => p.concat(v));
-      this.table.forEach(r => {
-        let tr = this.tableElement.appendChild(document.createElement('tr'));
-        r.forEach(c => tr.appendChild(c.el.t));
-      });
-      this.isInitialized = false;
-      this.isGameOver = false;
-      this.isCleard = false;
-      this.dispBombsCount = this.remainBombsCount;
-    }
-    init(cell = Cell.prototype) {
-      let cc = this.rowCount * this.colCount;
-      const cs = Array(cc).fill().map((v, i) => i);
-      // set safe at start cell
-      cs[cell.i] = cs[cc - 1];
-      cc--;
-      Array(this.bombCount).fill().map((v, i) => {
-        let t = ~~(Math.random() * (cc - i));
-        this.tableArray[cs[t]].setBomb();
-        cs[t] = cs[cc - i - 1];
-      });
-      this.timer.start();
-      this.isInitialized = true;
-    }
-    setGameOver() {
-      this.isGameOver = true;
-      this.timer.pause();
-      this.tableArray.forEach(c=>c.forceOpen());
-    }
-    checkCleared(){
-      if (this.tableArray.some(c=>!(c.b^c.opened))) {
-        return;
+        this.#game.checkCleared();
       }
-      console.warn('clear');
-      this.isGameOver = true;
-      this.isCleard = true;
-      this.timer.pause();
+      openAll() {
+        if (this.aroundFlaggsCount != this.aroundBombsCount) return;
+        this.aroundCells.forEach(c => c.open());
+      }
+      toggleFlag() {
+        if (this.#game.isGameOver) return;
+        if (!this.#game.isInitialized) return;
+        if (this.opened) return;
+        this.flagged = !this.flagged;
+      }
+    };
+
+    class Board {
+      rowCount = 0;
+      colCount = 0;
+      bombCount = 0;
+      isGameOver = false;
+      isCleard = false;
+      tableArray = [];
+      table = [];
+      tableElement = HTMLTableElement.prototype;
+      bombsElement = HTMLInputElement.prototype;
+      timerElement = HTMLInputElement.prototype;
+      timer = SecondsTimer.prototype;
+      isInitialized = false;
+      get remainBombsCount() {
+        return this.isInitialized ? this.bombCount : this.bombCount - this.tableArray.filter(c => c.flagged).length;
+      }
+      get dispBombsCount() { return this.bombsElement.value; }
+      set dispBombsCount(c) { this.bombsElement.value = c; }
+
+      constructor(tableElement, bombsElement, timerElement) {
+        this.tableElement = tableElement;
+        this.bombsElement = bombsElement;
+        this.timerElement = timerElement;
+        this.timer = new SecondsTimer(timerElement);
+        this.tableElement.addEventListener('click', ev => {
+          if (!ev.target.cl) return ev.preventDefault();
+          ev.target.cl.clicked();
+        });
+        this.tableElement.addEventListener('contextmenu', ev => {
+          ev.preventDefault();
+          if (!ev.target.cl) return;
+          ev.target.cl.toggleFlag();
+          this.dispBombsCount = this.remainBombsCount;
+        });
+      }
+      reset(rowCount = 10, colCount = 10, bombCount = 10) {
+        lblError.value = "";
+        rowCount = Number(rowCount);
+        colCount = Number(colCount);
+        bombCount = Number(bombCount);
+        if (rowCount < 1) return lblError.value = `invalid Parameter: rowCount = ${rowCount}`;
+        if (colCount < 1) return lblError.value = `invalid Parameter: colCount = ${colCount}`;
+        if (bombCount < 1) return lblError.value = `invalid Parameter: bombCount = ${bombCount}`;
+        if (rowCount * colCount <= bombCount) return lblError.value = `invalid Parameter: bombCount:${bombCount} over board size:${rowCount * colCount}(= ${rowCount} * ${colCount})`;
+        this.rowCount = rowCount;
+        this.colCount = colCount;
+        this.bombCount = bombCount;
+
+        this.tableElement.innerHTML = '';
+        this.table = Array(rowCount).fill().map((v, r) => Array(colCount).fill().map((v, c) => new Cell(this, r, c)));
+        this.tableArray = this.table.reduce((p, v) => p.concat(v));
+        this.table.forEach(r => {
+          let tr = this.tableElement.appendChild(document.createElement('tr'));
+          r.forEach(c => tr.appendChild(c.el.t));
+        });
+        this.isInitialized = false;
+        this.isGameOver = false;
+        this.isCleard = false;
+        this.dispBombsCount = this.remainBombsCount;
+      }
+      init(cell = Cell.prototype) {
+        let cc = this.rowCount * this.colCount;
+        const cs = Array(cc).fill().map((v, i) => i);
+        // set safe at start cell
+        cs[cell.i] = cs[cc - 1];
+        cc--;
+        Array(this.bombCount).fill().map((v, i) => {
+          let t = ~~(Math.random() * (cc - i));
+          this.tableArray[cs[t]].setBomb();
+          cs[t] = cs[cc - i - 1];
+        });
+        this.timer.start();
+        this.isInitialized = true;
+      }
+      setGameOver() {
+        this.isGameOver = true;
+        this.timer.pause();
+        this.tableArray.forEach(c => c.forceOpen());
+      }
+      checkCleared() {
+        if (this.tableArray.some(c => !(c.b ^ c.opened))) {
+          return;
+        }
+        console.warn('clear');
+        this.isGameOver = true;
+        this.isCleard = true;
+        this.timer.pause();
+      }
     }
-  }
-  let board = new Board(tBoard, inBombsRemain, inTimer);
-  board.reset(inRows.value,inCols.value,inBombs.value);
-  btnReset.addEventListener("click", x=>{board.reset(inRows.value,inCols.value,inBombs.value)});
-  
-</script>
+    let board = new Board(tBoard, inBombsRemain, inTimer);
+    board.reset(inRows.value, inCols.value, inBombs.value);
+    btnReset.addEventListener("click", x => { board.reset(inRows.value, inCols.value, inBombs.value) });
+
+  </script>
+</body>
+
+</html>

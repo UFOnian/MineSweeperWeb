@@ -57,7 +57,7 @@
     <label for="inRows">Rows: <input name="inRows" id="inRows" type="number" size="3" min="1" max="300" value="10"></label>
     <label for="inCols">Cols: <input name="inCols" id="inCols" type="number" size="3" min="1" max="300" value="10"></label>
     <label for="inBombs">Bombs: <input name="inBombs" id="inBombs" type="number" size="3" min="1" max="999" value="10"></label>
-    <div id="divError" style="color:red;">Errors here: <span id="lblError"></span></div>
+    <div id="divMsg">Messages: <span id="lblMessage" style="color:red;"></span></div>
   </div>
   <div id="gameField">
     <div>
@@ -71,7 +71,7 @@
     let inRows = HTMLInputElement.prototype;
     let inCols = HTMLInputElement.prototype;
     let inBombs = HTMLInputElement.prototype;
-    let lblError = HTMLSpanElement.prototype;
+    let lblMessage = HTMLSpanElement.prototype;
     let btnReset = HTMLButtonElement.prototype;
     let tBoard = HTMLTableElement.prototype;
     Array.from(document.querySelectorAll("[id]"), v => eval(v.id + "=v"));
@@ -242,14 +242,14 @@
         });
       }
       reset(rowCount = 10, colCount = 10, bombCount = 10) {
-        lblError.value = "";
+        lblMessage.value = "";
         rowCount = Number(rowCount);
         colCount = Number(colCount);
         bombCount = Number(bombCount);
-        if (rowCount < 1) return lblError.value = `invalid Parameter: rowCount = ${rowCount}`;
-        if (colCount < 1) return lblError.value = `invalid Parameter: colCount = ${colCount}`;
-        if (bombCount < 1) return lblError.value = `invalid Parameter: bombCount = ${bombCount}`;
-        if (rowCount * colCount <= bombCount) return lblError.value = `invalid Parameter: bombCount:${bombCount} over board size:${rowCount * colCount}(= ${rowCount} * ${colCount})`;
+        if (rowCount < 1) return lblMessage.value = `invalid Parameter: rowCount = ${rowCount}`;
+        if (colCount < 1) return lblMessage.value = `invalid Parameter: colCount = ${colCount}`;
+        if (bombCount < 1) return lblMessage.value = `invalid Parameter: bombCount = ${bombCount}`;
+        if (rowCount * colCount <= bombCount) return lblMessage.value = `invalid Parameter: bombCount:${bombCount} over board size:${rowCount * colCount}(= ${rowCount} * ${colCount})`;
         this.rowCount = rowCount;
         this.colCount = colCount;
         this.bombCount = bombCount;

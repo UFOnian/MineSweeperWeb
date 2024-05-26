@@ -57,6 +57,9 @@
     <label for="inRows">Rows: <input name="inRows" id="inRows" type="number" size="3" min="1" max="300" value="10"></label>
     <label for="inCols">Cols: <input name="inCols" id="inCols" type="number" size="3" min="1" max="300" value="10"></label>
     <label for="inBombs">Bombs: <input name="inBombs" id="inBombs" type="number" size="3" min="1" max="999" value="10"></label>
+    <div>
+      <label for="inSafeAround"><input type="checkbox" name="inSafeAround" id="inSafeAround">初期位置の周りを安全にする</label>
+    </div>
     <div id="divMsg">Messages: <span id="lblMessage" style="color:red;"></span></div>
   </div>
   <div id="gameField" style="width: fit-content;">
@@ -71,6 +74,7 @@
     let inRows = HTMLInputElement.prototype;
     let inCols = HTMLInputElement.prototype;
     let inBombs = HTMLInputElement.prototype;
+    let inSafeAround = HTMLInputElement.prototype;
     let lblMessage = HTMLSpanElement.prototype;
     let btnReset = HTMLButtonElement.prototype;
     let tBoard = HTMLTableElement.prototype;
@@ -168,7 +172,7 @@
       clicked() {
         if (this.#game.isGameOver) return;
         if (!this.#game.isInitialized) {
-          if(!this.#game.init(this)){
+          if (!this.#game.init(this)) {
             return;
           }
         }
@@ -216,6 +220,7 @@
       bombCount = 0;
       isGameOver = false;
       isCleard = false;
+      isSafeAround = false;
       tableArray = [];
       table = [];
       tableElement = HTMLTableElement.prototype;
@@ -250,7 +255,7 @@
           this.dispBombsCount = this.remainBombsCount;
         });
       }
-      reset(rowCount = 10, colCount = 10, bombCount = 10) {
+      reset(rowCount = 10, colCount = 10, bombCount = 10, isSafeAround = false) {
         this.dispMsg = "";
         this.valid = false;
         rowCount = Number(rowCount);
@@ -259,11 +264,13 @@
         if (rowCount < 1) return this.dispMsg = `invalid Parameter: rowCount = ${rowCount}`;
         if (colCount < 1) return this.dispMsg = `invalid Parameter: colCount = ${colCount}`;
         if (bombCount < 1) return this.dispMsg = `invalid Parameter: bombCount = ${bombCount}`;
-        if (rowCount * colCount <= bombCount) return this.dispMsg = `invalid Parameter: bombCount:${bombCount} over board size:${rowCount * colCount}(= ${rowCount} * ${colCount})`;
+        if (rowCount * colCount - (isSafeAround ? -9 : -1) <= bombCount)
+          return this.dispMsg = `invalid Parameter: bombCount:${bombCount} over board size:${rowCount * colCount}(= ${rowCount} * ${colCount})`;
         this.valid = true;
         this.rowCount = rowCount;
         this.colCount = colCount;
         this.bombCount = bombCount;
+        this.isSafeAround = isSafeAround;
 
         this.tableElement.innerHTML = '';
         this.table = Array(rowCount).fill().map((v, r) => Array(colCount).fill().map((v, c) => new Cell(this, r, c)));
@@ -279,12 +286,18 @@
         this.timer.reset();
       }
       init(cell = Cell.prototype) {
-        if(!this.valid)return false;
+        if (!this.valid) return false;
         let cc = this.rowCount * this.colCount;
         const cs = Array(cc).fill().map((v, i) => i);
         // set safe at start cell
         cs[cell.i] = cs[cc - 1];
         cc--;
+        if (this.isSafeAround) {
+          cell.around.forEach(i => {
+            cs[i] = cs[cc - 1];
+            cc--;
+          });
+        }
         Array(this.bombCount).fill().map((v, i) => {
           let t = ~~(Math.random() * (cc - i));
           this.tableArray[cs[t]].setBomb();
@@ -311,8 +324,8 @@
       }
     }
     let board = new Board(tBoard, inBombsRemain, inTimer, lblMessage);
-    board.reset(inRows.value, inCols.value, inBombs.value);
-    btnReset.addEventListener("click", x => { board.reset(inRows.value, inCols.value, inBombs.value) });
+    board.reset(inRows.value, inCols.value, inBombs.value, inSafeAround.checked);
+    btnReset.addEventListener("click", x => { board.reset(inRows.value, inCols.value, inBombs.value, inSafeAround.checked) });
 
   </script>
 </body>

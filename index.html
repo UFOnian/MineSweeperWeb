@@ -11,9 +11,6 @@
       font-family: "JetBrains Mono", consolas;
     }
 
-    /* #tBoard{
-    border-collapse: collapse;
-  } */
     input {
       text-align: right;
     }
@@ -136,6 +133,8 @@
         t: HTMLTableCellElement.prototype,
         b: HTMLButtonElement.prototype
       };
+      get text() { return this.el.b.innerText; }
+      set text(t) { this.el.b.innerText = t; }
       get opened() { return this.el.b.classList.contains("opened"); }
       set opened(f) { this.el.b.classList[f ? 'add' : 'remove']("opened"); }
       get flagged() { return this.el.b.classList.contains("flagged"); };
@@ -167,8 +166,6 @@
           }
         }
       }
-      get text() { return this.el.b.innerText; }
-      set text(t) { this.el.b.innerText = t; }
       clicked() {
         if (this.#game.isGameOver) return;
         if (!this.#game.isInitialized) {

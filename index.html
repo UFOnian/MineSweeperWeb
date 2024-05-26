@@ -167,7 +167,11 @@
       set text(t) { this.el.b.innerText = t; }
       clicked() {
         if (this.#game.isGameOver) return;
-        if (!this.#game.isInitialized) this.#game.init(this);
+        if (!this.#game.isInitialized) {
+          if(!this.#game.init(this)){
+            return;
+          }
+        }
         if (this.flagged) return;
         if (!this.opened)
           this.open();
@@ -220,6 +224,7 @@
       msgElement = HTMLElement.prototype;
       timer = SecondsTimer.prototype;
       isInitialized = false;
+      valid = false;
       get remainBombsCount() {
         return this.isInitialized ? this.bombCount - this.tableArray.filter(c => c.flagged).length : this.bombCount;
       }
@@ -247,6 +252,7 @@
       }
       reset(rowCount = 10, colCount = 10, bombCount = 10) {
         this.dispMsg = "";
+        this.valid = false;
         rowCount = Number(rowCount);
         colCount = Number(colCount);
         bombCount = Number(bombCount);
@@ -254,6 +260,7 @@
         if (colCount < 1) return this.dispMsg = `invalid Parameter: colCount = ${colCount}`;
         if (bombCount < 1) return this.dispMsg = `invalid Parameter: bombCount = ${bombCount}`;
         if (rowCount * colCount <= bombCount) return this.dispMsg = `invalid Parameter: bombCount:${bombCount} over board size:${rowCount * colCount}(= ${rowCount} * ${colCount})`;
+        this.valid = true;
         this.rowCount = rowCount;
         this.colCount = colCount;
         this.bombCount = bombCount;
@@ -272,6 +279,7 @@
         this.timer.reset();
       }
       init(cell = Cell.prototype) {
+        if(!this.valid)return false;
         let cc = this.rowCount * this.colCount;
         const cs = Array(cc).fill().map((v, i) => i);
         // set safe at start cell
@@ -284,6 +292,7 @@
         });
         this.timer.start();
         this.isInitialized = true;
+        return true;
       }
       setGameOver() {
         this.isGameOver = true;

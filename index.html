@@ -59,7 +59,7 @@
     <label for="inBombs">Bombs: <input name="inBombs" id="inBombs" type="number" size="3" min="1" max="999" value="10"></label>
     <div id="divMsg">Messages: <span id="lblMessage" style="color:red;"></span></div>
   </div>
-  <div id="gameField">
+  <div id="gameField" style="width: fit-content;">
     <div>
       <input name="inBombsRemain" id="inBombsRemain" type="text" readonly size="3">
       <button id="btnReset">reset</button>
@@ -217,6 +217,7 @@
       tableElement = HTMLTableElement.prototype;
       bombsElement = HTMLInputElement.prototype;
       timerElement = HTMLInputElement.prototype;
+      msgElement = HTMLElement.prototype;
       timer = SecondsTimer.prototype;
       isInitialized = false;
       get remainBombsCount() {
@@ -224,11 +225,14 @@
       }
       get dispBombsCount() { return this.bombsElement.value; }
       set dispBombsCount(c) { this.bombsElement.value = c; }
+      get dispMsg() { return this.msgElement.innerText; }
+      set dispMsg(t) { this.msgElement.innerText = c; }
 
-      constructor(tableElement, bombsElement, timerElement) {
+      constructor(tableElement, bombsElement, timerElement, msgElement) {
         this.tableElement = tableElement;
         this.bombsElement = bombsElement;
         this.timerElement = timerElement;
+        this.msgElement = msgElement;
         this.timer = new SecondsTimer(timerElement);
         this.tableElement.addEventListener('click', ev => {
           if (!ev.target.cl) return ev.preventDefault();
@@ -242,14 +246,14 @@
         });
       }
       reset(rowCount = 10, colCount = 10, bombCount = 10) {
-        lblMessage.value = "";
+        this.dispMsg = "";
         rowCount = Number(rowCount);
         colCount = Number(colCount);
         bombCount = Number(bombCount);
-        if (rowCount < 1) return lblMessage.value = `invalid Parameter: rowCount = ${rowCount}`;
-        if (colCount < 1) return lblMessage.value = `invalid Parameter: colCount = ${colCount}`;
-        if (bombCount < 1) return lblMessage.value = `invalid Parameter: bombCount = ${bombCount}`;
-        if (rowCount * colCount <= bombCount) return lblMessage.value = `invalid Parameter: bombCount:${bombCount} over board size:${rowCount * colCount}(= ${rowCount} * ${colCount})`;
+        if (rowCount < 1) return this.dispMsg = `invalid Parameter: rowCount = ${rowCount}`;
+        if (colCount < 1) return this.dispMsg = `invalid Parameter: colCount = ${colCount}`;
+        if (bombCount < 1) return this.dispMsg = `invalid Parameter: bombCount = ${bombCount}`;
+        if (rowCount * colCount <= bombCount) return this.dispMsg = `invalid Parameter: bombCount:${bombCount} over board size:${rowCount * colCount}(= ${rowCount} * ${colCount})`;
         this.rowCount = rowCount;
         this.colCount = colCount;
         this.bombCount = bombCount;
@@ -284,13 +288,14 @@
       setGameOver() {
         this.isGameOver = true;
         this.timer.pause();
+        this.dispMsg = 'Game Over...';
         this.tableArray.forEach(c => c.forceOpen());
       }
       checkCleared() {
         if (this.tableArray.some(c => !(c.b ^ c.opened))) {
           return;
         }
-        console.warn('clear');
+        this.dispMsg = 'Clear!';
         this.isGameOver = true;
         this.isCleard = true;
         this.timer.pause();

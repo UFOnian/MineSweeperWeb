@@ -159,7 +159,7 @@
           for (let j = c - 1; j < c + 2 && j < game.colCount; j++) {
             if (j < 0) continue;
             if (!(i - r || j - c)) continue;
-            this.around.push(i * game.rowCount + j);
+            this.around.push(i * game.colCount + j);
           }
         }
       }

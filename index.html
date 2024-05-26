@@ -310,7 +310,7 @@
         this.timer.pause();
       }
     }
-    let board = new Board(tBoard, inBombsRemain, inTimer);
+    let board = new Board(tBoard, inBombsRemain, inTimer, lblMessage);
     board.reset(inRows.value, inCols.value, inBombs.value);
     btnReset.addEventListener("click", x => { board.reset(inRows.value, inCols.value, inBombs.value) });
 

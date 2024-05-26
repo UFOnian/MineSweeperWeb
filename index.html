@@ -265,6 +265,7 @@
         this.isGameOver = false;
         this.isCleard = false;
         this.dispBombsCount = this.remainBombsCount;
+        this.timer.reset();
       }
       init(cell = Cell.prototype) {
         let cc = this.rowCount * this.colCount;

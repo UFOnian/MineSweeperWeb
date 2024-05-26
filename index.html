@@ -220,7 +220,7 @@
       timer = SecondsTimer.prototype;
       isInitialized = false;
       get remainBombsCount() {
-        return this.isInitialized ? this.bombCount : this.bombCount - this.tableArray.filter(c => c.flagged).length;
+        return this.isInitialized ? this.bombCount - this.tableArray.filter(c => c.flagged).length : this.bombCount;
       }
       get dispBombsCount() { return this.bombsElement.value; }
       set dispBombsCount(c) { this.bombsElement.value = c; }
